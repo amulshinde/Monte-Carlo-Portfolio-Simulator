@@ -89,10 +89,16 @@ if run_button:
 
         data = yf.download(tickers, start="2020-01-01")["Close"]
 
-        returns = data.pct_change().dropna()
+        if isinstance(data, pd.Series):
+            data = data.to_frame()
+
+        returns = data.pct_change()
+        returns = returns.replace([np.inf, -np.inf], np.nan).dropna()
 
         mean_returns = returns.mean()
         cov_matrix = returns.cov()
+
+        cov_matrix += np.eye(len(cov_matrix)) * 1e-8
 
         results = np.zeros((days, num_simulations))
 
